@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EFFECTIF CAMPO</title>
+  <style>
+    
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+
+    h2 {
+      text-align: center;
+      margin-top: 20px;
+      color: #333;
+    }
+
+   
+    table {
+      width: 80%;
+      margin: 20px auto;
+      border-collapse: collapse;
+      background-color: #fff;
+    }
+
+    th, td {
+      padding: 10px 15px;
+      text-align: left;
+      border: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #4a90e2;
+      color: white;
+    }
+
+    td {
+      background-color: #f9f9f9;
+    }
+
+    td button {
+      margin: 5px;
+      padding: 6px 12px;
+      font-size: 14px;
+      border: none;
+      cursor: pointer;
+    }
+
+    td button:hover {
+      opacity: 0.8;
+    }
+
+    
+    
+    
+    .button-container {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    #downloadExcel, #takeScreenshot, #takeScreenshot1, #loadTable1, #loadTable2 {
+      display: inline-block;
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+      color: white;
+      background-color: #4a90e2;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+      
+    }
+
+    #downloadExcel:hover, #takeScreenshot:hover, #takeScreenshot1:hover, #loadTable1:hover, #loadTable2:hover {
+      background-color: #45a049;
+    }
+
+    
+
+
+    #downloadExcel {
+      margin-right: 20px;
+    }
+
+    #rowCountDisplay {
+  text-align: center;
+  
+  align-items: center;
+  margin: 15px 0;
+  padding: 10px;
+  background-color: #4a90e2; 
+  color: white; 
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 8px; 
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+}
+
+     #rowCountDisplay strong {
+      font-size: 20px;
+      margin-left: 20px;
+      
+}
+
+#rowCountDisplay span {
+  color: #ffdd57; 
+  font-size: 22px; 
+}
+
+.filter-container {
+      display: flex;
+      justify-content: center;
+      margin: 20px 0;
+    }
+
+    .filter-container input {
+      padding: 10px;
+      font-size: 16px;
+      margin-right: 10px;
+      width: 200px;
+    }
+  </style>
+</head>
+<body>
+  <div class="button-container">
+    <button style="display: none;" id="downloadExcel" disabled>Téléchargez Excel</button>
+    <button id="takeScreenshot">Téléchargez Image</button>
+    <button style="display: none;" id="takeScreenshot1" onclick="copyLink()" disabled>Copier le lien</button>
+    <button id="loadTable1">Aujourd'hui</button>
+    <button id="loadTable2">Hier</button>
+  </div>
+
+
+  <div id="rowCountDisplay">
+    <strong>Total Presences: <span id="rowCount">.....</span> Prs</strong>
+  </div>
+  
+  <table id="dataTable">
+    <thead>
+      <tr>
+        <th>C.T</th>
+        <th>TRABAJADOR</th>
+        <th>RELOJ</th>
+        <th>FECHA HORA</th>
+        <th>ENCARGADO</th>
+      </tr>
+      <tr>
+        <th><input type="text" oninput="filterTable(0)" placeholder="Filter C.T"></th>
+        <th><input type="text" oninput="filterTable(1)" placeholder="Filter Trabajador"></th>
+        <th><input type="text" oninput="filterTable(2)" placeholder="Filter Reloj"></th>
+        <th><input type="text" oninput="filterTable(3)" placeholder="Filter Fecha"></th>
+        <th><input type="text" oninput="filterTable(4)" placeholder="Filter Encargado"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- يتم ملء البيانات ديناميكياً -->
+    </tbody>
+  </table>
+
+  <script>
+    const webAppUrls = {
+      table1: "https://script.google.com/macros/s/AKfycbw69Fro4SoHL6322yLAVWErEU9WgdaJFMrS_WwY6WGfHKQi5tPrPGtz3S9FSXH78EW57g/exec",
+      table2: "https://script.google.com/macros/s/AKfycbx7gows6bDfJ2qEEdwsvGCPyLkdrLDHLhxLWKAsl-zEHFPAiOD-4vYSml2tEI04OT-uhg/exec"
+    };
+
+    function loadData(tableKey) {
+
+  fetch(webAppUrls[tableKey] + '?action=getData')
+    .then(response => response.json())
+    .then(data => {
+      let tableBody = document.getElementById("dataTable").getElementsByTagName("tbody")[0];
+      tableBody.innerHTML = '';  
+
+      data.forEach(function(row) {
+        if (row[2] === "FACE_40") {
+          let tr = document.createElement("tr");
+
+          row.forEach(function(cell) {
+            let td = document.createElement("td");
+            td.textContent = cell; 
+            tr.appendChild(td);
+          });
+
+          tableBody.appendChild(tr);
+        }
+      });
+      calculateRowCount();
+    });
+}
+
+    function filterTable(columnIndex) {
+      const table = document.getElementById("dataTable");
+      const filterInputs = table.querySelectorAll("thead tr:nth-child(2) input");
+      const rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+
+      for (let i = 0; i < rows.length; i++) {
+        let showRow = true;
+
+        for (let j = 0; j < filterInputs.length; j++) {
+          const filterValue = filterInputs[j].value.toLowerCase();
+          const cellValue = rows[i].getElementsByTagName("td")[j]?.textContent.toLowerCase() || "";
+
+          if (filterValue && !cellValue.includes(filterValue)) {
+            showRow = false;
+            break;
+          }
+        }
+
+        rows[i].style.display = showRow ? "" : "none";
+      }
+      calculateRowCount();
+    }
+
+    function calculateRowCount() {
+      const table = document.getElementById("dataTable");
+      const rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+      let count = 0;
+
+      for (let i = 0; i < rows.length; i++) {
+        const firstColumnValue = parseFloat(rows[i].getElementsByTagName("td")[0]?.textContent) || 0;
+        const isVisible = rows[i].style.display !== "none";
+
+        if (firstColumnValue > 2 && isVisible) {
+          count++;
+        }
+      }
+      document.getElementById("rowCount").textContent = count;
+    }
+
+    document.getElementById("loadTable1").addEventListener("click", () => loadData("table1"));
+    document.getElementById("loadTable2").addEventListener("click", () => loadData("table2"));
+
+    document.addEventListener('DOMContentLoaded', () => loadData("table1"));
+  </script>
+</body>
+</html>
