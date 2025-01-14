@@ -217,20 +217,21 @@
     }
 
     function calculateRowCount() {
-      const table = document.getElementById("dataTable");
-      const rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr");
-      let count = 0;
+  const table = document.getElementById("dataTable");
+  const rows = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+  let count = 0;
 
-      for (let i = 0; i < rows.length; i++) {
-        const firstColumnValue = parseFloat(rows[i].getElementsByTagName("td")[0]?.textContent) || 0;
-        const isVisible = rows[i].style.display !== "none";
+  for (let i = 0; i < rows.length; i++) {
+    const secondColumnValue = rows[i].getElementsByTagName("td")[1]?.textContent.trim(); // عمود 2
+    const isVisible = rows[i].style.display !== "none";
 
-        if (firstColumnValue > 2 && isVisible) {
-          count++;
-        }
-      }
-      document.getElementById("rowCount").textContent = count;
+    if (secondColumnValue && secondColumnValue !== "" && isVisible) {
+      count++; // إذا كانت الخانة غير فارغة
     }
+  }
+  document.getElementById("rowCount").textContent = count; // عرض العدد
+}
+
 
     document.getElementById("loadTable1").addEventListener("click", () => loadData("table1"));
     document.getElementById("loadTable2").addEventListener("click", () => loadData("table2"));
